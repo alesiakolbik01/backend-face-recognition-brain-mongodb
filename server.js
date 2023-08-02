@@ -66,11 +66,10 @@ app.get('/profile/:id', async (req, res) => {
 
 app.put('/image', async(req, res) => {
     const userId = req.body.id;
-    console.log(req.body)
     const dataResult = await updateUserPfofile(userId);
 
-    if(dataResult.modifiedCount === 1){
-        res.json('success');
+    if(dataResult.status === "success"){
+        res.json(dataResult);
     }
     else
     {
@@ -106,7 +105,13 @@ const updateUserPfofile = async (userId) => {
 
     return await axios(config)
         .then(function (response) {
-            return response.data;
+            if(response.data.modifiedCount === 1){
+                return {
+                    status: "success",
+                    entries: newNumderReq
+                }
+            }
+            return { status: "error"};
         })
         .catch(function (error) {
             console.log(error);

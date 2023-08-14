@@ -6,6 +6,7 @@ import register from './controllers/register.js';
 import profile from './controllers/profile.js';
 import image from './controllers/image.js';
 import signin from './controllers/signin.js';
+import clarifai from './controllers/clarifai.js';
 
 const saltRounds = 10;
 
@@ -30,6 +31,8 @@ app.post('/register', (req, res) => { register.handleRegister(req, res, bcrypt, 
 app.get('/profile/:id', (req, res) => { profile.handleGetProfile(req, res) })
 
 app.put('/image', (req, res) => { image.incrimentEntries(req, res) })
+
+app.post('/imageurl', (req, res) => { clarifai.handleGetClarifai(req, res) })
 
 app.listen(3000, ()=> {
     console.log('app is running on port 3000');

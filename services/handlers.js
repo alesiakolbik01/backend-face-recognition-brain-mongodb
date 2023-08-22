@@ -10,6 +10,13 @@ const clarifaiDataInit = {
     MODEL_VERSION_ID: '6dc7e46bc9124c5c8824be4822abe105'
   };
 
+import {ClarifaiStub, grpc} from "clarifai-nodejs-grpc";
+
+const stub = ClarifaiStub.grpc();
+
+const metadata = new grpc.Metadata();
+metadata.set("authorization", "Key "+ clarifaiDataInit.API_KEY);
+
 const checkUserExist = async (user) => {
     const data = JSON.stringify({
         "collection": "users",
@@ -172,9 +179,34 @@ const getOptionsClarifai = (Imageurl) => {
 }
 
 const getClarifaiApiData = async (imageUrl) => {
-    return await axios(getOptionsClarifai(imageUrl))
-    .then(result => { return result.data })
-    .catch(error => { return error });
+    return new Promise ((resolve, reject) => {
+        stub.PostModelOutputs(
+            {
+                user_app_id: {
+                    "user_id": clarifaiDataInit.USER_ID,
+                    "app_id": clarifaiDataInit.APP_ID
+                },
+                model_id: clarifaiDataInit.MODEL_ID,
+                version_id: clarifaiDataInit.MODEL_VERSION_ID, // This is optional. Defaults to the latest model version
+                inputs: [
+                    { data: { image: { url: imageUrl, allow_duplicate_url: true } } }
+                ]
+            },
+            metadata,
+            (err, response) => {
+                if (err) {
+                    reject( new Error(err) );
+                }
+        
+                if (response.status.code !== 10000) {
+                    reject( new Error("Post model outputs failed, status: " + response.status.description) );
+                }
+        
+                // Since we have one input, one output will exist here
+                resolve(response);
+            }
+        );
+    })
 }
 
 export default {
